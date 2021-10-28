@@ -1,15 +1,10 @@
+
+from math import exp
+from math import pi
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import gaussian as g
-from numpy.lib.arraypad import pad
-from math import exp
-from math import pi
-import time
-
-
-#shape=(높이,너비)
 
 def pad_my1d(img: np.array, kernel : np.array ): #가로 커널인데 왜 위아래로 늘어나냐고
     
@@ -176,109 +171,3 @@ def get_gaussian_filter_2d(size:int, sigma:int):
 
     return filter/sum
     
-def filter9(img: np.array):
-    font                   = cv2.FONT_HERSHEY_SIMPLEX
-    bottomLeftCornerOfText = (10,40)
-    fontScale              = 1
-    fontColor              = (1,1,1)
-    lineType               = 2
-    
-    sizearr=[5,11,17]
-    sigmaarr=[1,6,11]
-    imgrow=img.copy()
-    imgcol=img.copy()
-    
-    for i in sizearr:
-        
-        for j in sigmaarr:
-            kernel=get_gaussian_filter_2d(i,j)
-            img_ij=cross_correlation_2d(img,kernel)
-            cv2.putText(img_ij,'{0}x{0} s={1}'.format(i,j), 
-            bottomLeftCornerOfText, 
-            font, 
-            fontScale,
-            fontColor,
-            lineType)
-            if(j==1):
-                imgrow=img_ij.copy()
-            else:
-                imgrow=np.column_stack([imgrow,img_ij])
-        if(i==5):
-            imgcol=imgrow.copy()
-        else:
-            imgcol=np.row_stack([imgcol,imgrow])       
-    return imgcol
-
-def filter9_1d_vertical(img: np.array):
-    
-    #가로 가우시안 커널만들기
-    size=5
-    sigma=1
-    kernel=get_gaussian_filter_1d(size,sigma) #가로 가우시안 커널
-    kernel_horizontal=kernel[np.newaxis]
-    start_time_1d=time.time()
-    img_1d_horizontal=cross_correlation_1d(img,kernel_horizontal)
-    end_time_1d=time.time()
-    
-    kernel_vertical=kernel[:,np.newaxis]
-    img_1d_vertical=cross_correlation_1d(img,kernel_vertical)
-    #2d 구하기
-    kernel_2d=get_gaussian_filter_2d(size,sigma)
-    start_time_2d=time.time()
-    img_2d=cross_correlation_2d(img,kernel_2d)
-    end_time_2d=time.time()
-    
-    print('1D computational time:{0}'.format(end_time_1d-start_time_1d))
-    print('2D computational time:{0}'.format(end_time_2d-start_time_2d))
-    cv2.imshow('difference with vertical', (img_1d_vertical-img_2d))
-    cv2.imshow('difference with horizontal', (img_1d_horizontal-img_2d))
-    
-    
-
-
-# cv2.imshow('current',img)
-# print(img.shape)
-
-# kernel=np.array([[0,0,0,0,0,0,0,0,0,0,1]])
-# kernel=np.array([[1],[0],[0]])
-# kernel=np.array([[0,0,0],
-#                 [0,0,1],
-#                 [0,0,0]])
-# print('kernelshape:', kernel.shape)
-# img=np.array([[10,20,30],
-#               [40,50,60],
-#               [70,80,90],
-#               [100,110,120]])
-# print(img.shape)
-
-# size=5
-# sigma=1
-# # get_gaussian_filter_1d(size, sigma)
-# kernel=get_gaussian_filter_2d(size, sigma)
-
-# # cross_correlation_1d(img,kernel)
-# img1=cross_correlation_2d(img,kernel)
-
-#(d)
-imgName='lenna.png'
-img=cv2.imread('./{0}'.format(imgName),cv2.IMREAD_GRAYSCALE)
-# cv2.imshow('test',img)
-cv2.imwrite('./result/part_1_gaussian_filtered_{0}'.format(imgName),filter9(img))
-
-imgName='shapes.png'
-img=cv2.imread('Computer_Vision/Assignment1/{0}'.format(imgName),cv2.IMREAD_GRAYSCALE)
-cv2.imwrite('./result/part_1_gaussian_filtered_{0}'.format(imgName),filter9(img))
-
-#(e)
-imgName='lenna.png'
-img=cv2.imread('./{0}'.format(imgName),cv2.IMREAD_GRAYSCALE)
-filter9_1d_vertical(img)
-
-imgName='shapes.png'
-img=cv2.imread('Computer_Vision/Assignment1/{0}'.format(imgName),cv2.IMREAD_GRAYSCALE)
-filter9_1d_vertical(img)
-
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-
